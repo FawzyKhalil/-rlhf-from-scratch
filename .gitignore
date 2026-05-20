@@ -1,0 +1,27 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Data and checkpoints (large files)
+data/processed/
+checkpoints/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Environment
+.env
+*.env
+venv/
+.venv/
+
+# Editor
+.vscode/
+.idea/
+*.swp
