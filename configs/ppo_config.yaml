@@ -1,0 +1,46 @@
+# PPO configuration — Phase 2
+#
+# Tuned for GPT-2 (124M) on a single 16GB GPU.
+#
+# Scaling to 7B+:
+#   set use_lora: true for actor and critic
+#   set gradient_checkpointing: true
+#   reduce batch_size and increase gradient_accumulation_steps
+#   increase kl_coef if reward hacking appears (reward climbs but KL explodes)
+
+model:
+  actor: checkpoints/sft/best_sft
+  critic: checkpoints/sft/best_sft  # shared init with actor
+  reward_model: checkpoints/rm/best_rm.pt
+  reference: checkpoints/sft/best_sft
+  use_lora: false  # set true for >1B models
+  gradient_checkpointing: false
+
+ppo:
+  epochs: 4                  # inner epochs per rollout batch
+  batch_size: 16             # number of prompts per rollout collection
+  mini_batch_size: 4
+  clip_range: 0.2            # ε in clipped surrogate objective
+  value_clip_range: 0.2
+
+reward:
+  kl_coef: 0.1               # β — controls reward-hacking / KL trade-off
+  # Too small β → reward hacks (high RM score, incoherent text)
+  # Too large β → PPO ≈ SFT (no improvement)
+  # See results/figures/reward_vs_kl.png for the Gao et al. 2022 reproduction
+
+rollout:
+  batch_size: 32
+  max_new_tokens: 128
+  temperature: 1.0
+  top_p: 1.0
+
+training:
+  total_steps: 1000
+  lr_actor: 1.0e-5
+  lr_critic: 1.0e-5
+  warmup_steps: 50
+  max_grad_norm: 1.0
+  checkpoint_dir: checkpoints/ppo
+  log_interval: 10
+  save_interval: 100
