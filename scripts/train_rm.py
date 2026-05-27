@@ -6,10 +6,13 @@ Key decisions:
   - Cosine LR schedule with warmup: stabilises early training when rewards are near zero.
   - Save the checkpoint with highest val accuracy, not lowest val loss.
   - Log val accuracy every epoch — 65%+ is the Phase 1 exit criterion (human ≈ 75%).
+  - Per-epoch checkpoints (epoch_N_rm.pt) are saved so plot_rm_results.py can show
+    how reward distributions separate over training.
 
 Usage:
     python scripts/train_rm.py
     python scripts/train_rm.py --config configs/rm_config.yaml --device cuda
+    python scripts/train_rm.py --no_figures   # skip figure generation
 """
 
 from __future__ import annotations
@@ -159,7 +162,10 @@ def main() -> None:
     parser.add_argument("--config", default="configs/rm_config.yaml")
     parser.add_argument("--data_dir", default="data/processed")
     parser.add_argument("--checkpoint_dir", default="checkpoints/rm")
+    parser.add_argument("--figures_dir", default="results/figures")
     parser.add_argument("--device", default="auto")
+    parser.add_argument("--no_figures", action="store_true",
+                        help="Skip figure generation after training")
     args = parser.parse_args()
 
     with open(args.config) as f:
@@ -256,6 +262,11 @@ def main() -> None:
             )
             print(f"  ✓ saved best checkpoint  (val_acc={val_acc:.4f})")
 
+        # Per-epoch checkpoint — used by plot_rm_results.py to show distribution separation
+        model.save_checkpoint(
+            str(ckpt_dir / f"epoch_{epoch}_rm.pt"),
+            epoch=epoch, val_acc=val_acc, val_loss=val_loss, config=cfg,
+        )
         # Always keep latest for resuming
         model.save_checkpoint(
             str(ckpt_dir / "latest_rm.pt"),
@@ -270,6 +281,17 @@ def main() -> None:
         print(
             "⚠  val accuracy < 65% (random = 50%, human ≈ 75%). "
             "Try training for more epochs or increasing the learning rate."
+        )
+
+    # ── Figure generation ────────────────────────────────────────────────────
+    if not args.no_figures:
+        print("\nGenerating Fig 1 plots…")
+        from scripts.plot_rm_results import generate  # local import avoids circular dep at top
+        generate(
+            checkpoint_dir=args.checkpoint_dir,
+            data_dir=args.data_dir,
+            figures_dir=args.figures_dir,
+            device=device,
         )
 
 

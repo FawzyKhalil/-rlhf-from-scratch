@@ -39,7 +39,26 @@ The KL penalty at every token prevents the actor from drifting too far from the 
 
 ## Key Results
 
-> Results from Phase 2 training — figures committed to `results/figures/` after run completes.
+### Fig 1 — Reward model training (Phase 1)
+
+**Val accuracy and loss curves** — generated automatically by `make train-rm`:
+
+![RM val accuracy](results/figures/rm_val_accuracy.png)
+
+**Chosen vs rejected reward distributions** — the two populations should visibly separate by epoch 2:
+
+![RM reward distributions](results/figures/rm_reward_distributions.png)
+
+> Figures are written to `results/figures/` at the end of `make train-rm`.
+> Re-generate without retraining: `make plot-rm`.
+
+---
+
+### Fig 2 — PPO training dashboard *(Phase 2 in progress)*
+
+### Fig 3 — Reward vs KL trade-off *(Phase 2 in progress)*
+
+This is the most important result. It reproduces the Gao et al. (2022) finding that reward and KL diverge as β decreases: small β → high RM score but incoherent text (reward hacking); large β → no improvement over SFT. Our data will show where the Pareto frontier sits for GPT-2 + HH-RLHF.
 
 | Model | RM Win Rate | Avg Reward | KL from π_ref |
 |-------|-------------|-----------|--------------|
@@ -47,12 +66,6 @@ The KL penalty at every token prevents the actor from drifting too far from the 
 | PPO β=0.05 | TBD | TBD | TBD |
 | PPO β=0.10 | TBD | TBD | TBD |
 | PPO β=0.20 | TBD | TBD | TBD |
-
-**Fig 2 — PPO training dashboard** *(after Phase 2)*
-
-**Fig 3 — Reward vs KL trade-off** *(after Phase 2)*
-
-This plot is the most important result. It reproduces the Gao et al. (2022) finding that reward and KL diverge as β decreases: small β → high reward but incoherent text (reward hacking); large β → no improvement over SFT. Our own data will show where the Pareto frontier sits for GPT-2 + HH-RLHF.
 
 **Qualitative examples** *(after Phase 2 — will include at least one reward-hacking case)*
 
@@ -161,10 +174,11 @@ src/
 data/
   prepare_hh_rlhf.py    Dataset prep    (Phase 1)
 scripts/
-  train_rm.py           RM training     (Phase 1)
-  train_sft.py          SFT training    (Phase 1)
-  train_ppo.py          PPO training    (Phase 2)
-  run_eval.py           Evaluation      (Phase 3)
+  train_rm.py           RM training + Fig 1 auto-generation  (Phase 1)
+  plot_rm_results.py    Fig 1 standalone regeneration         (Phase 1)
+  train_sft.py          SFT training                          (Phase 1)
+  train_ppo.py          PPO training                          (Phase 2)
+  run_eval.py           Evaluation                            (Phase 3)
 configs/
   rm_config.yaml
   sft_config.yaml

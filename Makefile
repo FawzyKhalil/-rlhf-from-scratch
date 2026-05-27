@@ -5,17 +5,18 @@ RM_CKPT       ?= checkpoints/rm/best_rm.pt
 SFT_CKPT      ?= checkpoints/sft/best_sft
 PPO_CONFIG    ?= configs/ppo_config.yaml
 
-.PHONY: help install prepare-data train-rm train-sft train-ppo eval test clean
+.PHONY: help install prepare-data train-rm train-sft train-ppo eval plot-rm test clean
 
 help:
 	@echo "RLHF From Scratch — GPT-2 + Anthropic HH-RLHF"
 	@echo ""
 	@echo "  make install        Install Python dependencies"
 	@echo "  make prepare-data   Download and tokenise HH-RLHF dataset"
-	@echo "  make train-rm       Train Bradley-Terry reward model (Phase 1)"
-	@echo "  make train-sft      Train SFT baseline with LoRA     (Phase 1)"
-	@echo "  make train-ppo      PPO training loop                 (Phase 2)"
-	@echo "  make eval           Evaluation + figures              (Phase 3)"
+	@echo "  make train-rm       Train Bradley-Terry reward model + generate Fig 1 (Phase 1)"
+	@echo "  make plot-rm        Re-generate Fig 1 from existing checkpoints (no retraining)"
+	@echo "  make train-sft      Train SFT baseline with LoRA                  (Phase 1)"
+	@echo "  make train-ppo      PPO training loop                              (Phase 2)"
+	@echo "  make eval           Evaluation + figures                           (Phase 3)"
 	@echo "  make test           Run unit tests"
 	@echo "  make clean          Remove generated data and checkpoints"
 
@@ -30,6 +31,12 @@ train-rm: $(DATA_DIR)
 		--config configs/rm_config.yaml \
 		--data_dir $(DATA_DIR) \
 		--checkpoint_dir checkpoints/rm
+
+plot-rm:
+	python scripts/plot_rm_results.py \
+		--checkpoint_dir checkpoints/rm \
+		--data_dir $(DATA_DIR) \
+		--figures_dir results/figures
 
 train-sft: $(DATA_DIR)
 	python scripts/train_sft.py \

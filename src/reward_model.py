@@ -70,11 +70,17 @@ class RewardModel(nn.Module):
         torch.save({"model_state_dict": self.state_dict(), **extra}, path)
 
     @classmethod
-    def from_checkpoint(cls, path: str, model_name: str = "gpt2") -> "RewardModel":
-        ckpt = torch.load(path, map_location="cpu")
-        cfg = ckpt.get("config", {})
+    def from_checkpoint(cls, path: str, model_name: str | None = None) -> "RewardModel":
+        """Load a saved reward model checkpoint.
+
+        The model name is stored inside the checkpoint config; pass ``model_name``
+        only to override it (e.g. when loading a checkpoint with a different backbone).
+        """
+        ckpt = torch.load(path, map_location="cpu", weights_only=False)
+        cfg  = ckpt.get("config", {})
+        name = model_name or cfg.get("model", {}).get("name", "gpt2")
         model = cls(
-            model_name=model_name,
+            model_name=name,
             dropout=cfg.get("model", {}).get("dropout", 0.1),
         )
         model.load_state_dict(ckpt["model_state_dict"])
