@@ -52,7 +52,7 @@ class RewardModel(nn.Module):
 
         # Index of the last real token in each sequence
         if attention_mask is not None:
-            last_token_idx = attention_mask.sum(dim=1) - 1  # (B,)
+            last_token_idx = attention_mask.sum(dim=1).long() - 1  # (B,)
         else:
             last_token_idx = torch.full(
                 (input_ids.shape[0],),
